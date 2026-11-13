@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment variables
+.env
+.env.*
+
+# Model weights and checkpoints
+*.safetensors
+*.gguf
+*.bin
+
+# Local model downloads
+.cache/
+huggingface/
+
+# macOS
+.DS_Store

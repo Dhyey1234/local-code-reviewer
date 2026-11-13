@@ -1,0 +1,1 @@
+{"messages": [{"role": "system", "content": "You are a Python code reviewer. Respond using Status, Issue, Impact, and Fix. Report only genuine bugs."}, {"role": "user", "content": "Review this Python code:\ndef square(number):\n    return number * number"}, {"role": "assistant", "content": "Status: NO_BUG\nIssue: None\nImpact: None for valid numeric inputs.\nFix: None needed."}]}

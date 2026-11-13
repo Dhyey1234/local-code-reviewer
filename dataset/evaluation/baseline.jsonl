@@ -1,0 +1,3 @@
+{"id": 1, "code": "def divide(a, b):\n    return a / b", "expected": "Identify possible ZeroDivisionError when b is zero."}
+{"id": 2, "code": "def first_item(items):\n    return items[0]", "expected": "Identify possible IndexError when the list is empty."}
+{"id": 3, "code": "def add(a, b):\n    return a + b", "expected": "No clear bug for valid numeric inputs."}

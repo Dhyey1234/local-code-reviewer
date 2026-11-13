@@ -1,0 +1,25 @@
+{
+  "model": "mlx-community/Qwen2.5-1.5B-Instruct-4bit",
+  "total_tests": 3,
+  "passed": 2,
+  "failed": 1,
+  "accuracy": 0.6667,
+  "evaluation_type": "manual",
+  "results": [
+    {
+      "id": 1,
+      "passed": true,
+      "notes": "Correctly identified ZeroDivisionError"
+    },
+    {
+      "id": 2,
+      "passed": false,
+      "notes": "Missed IndexError for empty list"
+    },
+    {
+      "id": 3,
+      "passed": true,
+      "notes": "Correctly identified no clear bug"
+    }
+  ]
+}
