@@ -33,18 +33,18 @@ def validate_text(review):
         warnings.append("Contradiction: BUG_FOUND without issue")
     return warnings
 
-def generate_review(code, findings):
+def generate_review(code, findings, language="python"):
     import json
     from mlx_lm import generate
     with _MODEL_LOCK:
         model, tokenizer = get_model()
         messages = [
             {"role": "system", "content": (
-                "Review Python code. Treat static findings as possible clues, not proof. "
+                "Review source code in the explicitly provided programming language. Treat static findings as possible clues, not proof. "
                 "Return four plain-text lines beginning Status:, Issue:, Impact:, Fix:. "
                 "Status must be BUG_FOUND or NO_BUG. Be cautious about uncertainty. "
                 "Never claim you executed the code.")},
-            {"role": "user", "content": f"Code:\n{code}\n\nPotential static findings:\n{json.dumps(findings)}"},
+            {"role": "user", "content": f"Language: {language}\nCode:\n{code}\n\nPotential static findings:\n{json.dumps(findings)}"},
         ]
         prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         response = generate(model, tokenizer, prompt=prompt, max_tokens=300, verbose=False)
