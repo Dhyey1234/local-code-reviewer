@@ -19,3 +19,12 @@ huggingface/
 
 # macOS
 .DS_Store
+
+# Local feedback database
+data/*.sqlite3
+data/*.sqlite3-*
+data/*.db
+
+# Frontend backups and generated files
+*.bak
+*.tsbuildinfo
