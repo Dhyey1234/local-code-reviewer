@@ -5,7 +5,9 @@ type Language = 'python' | 'javascript' | 'typescript' | 'java' | 'cpp' | 'cshar
 type Finding = { issue: string; line?: number; message: string };
 type Result = {
   review_id: string;
+  language?: Language;
   findings: Finding[];
+  style_findings?: Finding[];
   ai_review: string;
   warnings: string[];
 };
@@ -102,21 +104,36 @@ export default function App() {
     setFeedbackSent(false);
 
     try {
-      const response = await fetch('/api/review', {
+      const response = await fetch('/api/review/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language,
-          use_ai: useAi,
-        }),
+        body: JSON.stringify({ code, language, use_ai: useAi }),
       });
-
       if (!response.ok) {
-        throw new Error(`Review failed (HTTP ${response.status})`);
+        throw new Error(`Review could not start (HTTP ${response.status})`);
       }
-
-      setResult(await response.json() as Result);
+      const { job_id } = await response.json() as { job_id: string };
+      let completed = false;
+      for (let attempt = 0; attempt < 600; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const statusResponse = await fetch(`/api/review/jobs/${encodeURIComponent(job_id)}`);
+        if (!statusResponse.ok) {
+          throw new Error(`Could not retrieve review status (HTTP ${statusResponse.status})`);
+        }
+        const job = await statusResponse.json() as {
+          status: 'queued' | 'running' | 'completed' | 'failed';
+          result: Result | null;
+          error: string | null;
+        };
+        if (job.status === 'failed') throw new Error(job.error || 'Review failed');
+        if (job.status === 'completed') {
+          if (!job.result) throw new Error('Review completed without results');
+          setResult(job.result);
+          completed = true;
+          break;
+        }
+      }
+      if (!completed) throw new Error('Review is taking too long. Please try again.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Review failed');
     } finally {
@@ -403,6 +420,32 @@ export default function App() {
                       </div>
                     )}
                   </div>
+
+                  {result.language === 'python' && (
+                    <div className="result-section">
+                      <div className="result-heading">
+                        <h4>PEP 8 style checks</h4>
+                        <span>{String(result.style_findings?.length ?? 0).padStart(2, '0')}</span>
+                      </div>
+                      {(result.style_findings?.length ?? 0) === 0 ? (
+                        <div className="clean-state">
+                          <strong>No style violations reported</strong>
+                          <p>Only the enabled pycodestyle rules are checked. See warnings if the checker is unavailable.</p>
+                        </div>
+                      ) : (
+                        <div className="findings-list">
+                          {result.style_findings!.map((finding, i) => (
+                            <article className="finding-row" key={i}>
+                              <div className="finding-top"><strong>{finding.issue}</strong>
+                                {finding.line != null && <span>LINE {finding.line}</span>}
+                              </div>
+                              <p>{finding.message}</p>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="result-section">
                     <div className="result-heading">
